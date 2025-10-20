@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "shelter_translator",
+	"version": "${version}",
+	"name": "shelter_translator",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/shelter_translator/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.shelter.translator.Shelter_translator"
+		],
+		"client": [
+			"com.shelter.translator.ShelterTranslatorClient"
+		]
+	},
+	"mixins": [
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
