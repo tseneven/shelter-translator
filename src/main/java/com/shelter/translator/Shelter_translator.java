@@ -13,7 +13,7 @@ public class Shelter_translator implements ModInitializer {
 	@Override
 	public void onInitialize() {
 
-		LOGGER.info("Hello Fabric world!");
+		System.out.println("[Shelter Translator] Мод загружен (main)!");
 
 	}
 }

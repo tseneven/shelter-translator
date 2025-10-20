@@ -81,7 +81,7 @@ public class ChatListener{
             }
 
             if(translatedText != null && !translatedText.isEmpty()){
-                Text text = Text.literal("TRANSLATOR: "+ username+ " " + translatedText).formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
+                Text text = Text.literal("┌" + translatedText).formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
                 client.inGameHud.getChatHud().addMessage(text);
             }
 

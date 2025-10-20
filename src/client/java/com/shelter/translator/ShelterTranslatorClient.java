@@ -9,7 +9,7 @@ public class ShelterTranslatorClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		chatListener = new ChatListener();
-
+		System.out.println("[Shelter Translator] Мод загружен (client)!");
 		chatListener.register();
 	}
 }
