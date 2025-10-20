@@ -120,3 +120,5 @@ You are free to use, modify, and distribute the mod for any purpose, including c
 
 Мод распространяется под лицензией **CC0 1.0 Universal (Public Domain)**.  
 Вы можете свободно использовать, модифицировать и распространять мод в любых целях, включая коммерческие.
+<img width="166" height="804" alt="image" src="https://github.com/user-attachments/assets/cc492f16-4afe-4e46-ae94-f5e328846446" />
+
