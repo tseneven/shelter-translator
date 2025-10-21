@@ -31,6 +31,10 @@ public class ChatListener{
             String fullText = text.getString();
 
             int firstSpace = fullText.indexOf(' ');
+            String myUsername = gameProfile.getName();
+
+
+
             String username;
 
             if (firstSpace != -1) {
@@ -39,7 +43,15 @@ public class ChatListener{
                 username = fullText;
             }
 
+            myUsername = "<" + myUsername + ">";
+
             assert signedMessage != null;
+
+
+            if(myUsername.equals(username)){
+                return true;
+            }
+
             sendClientMessage(username, signedMessage.signedBody().content());
 
             return true;
