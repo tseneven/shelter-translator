@@ -18,7 +18,7 @@ The mod automatically translates chat messages on the client side, making commun
 ## Installation & Running
 
 1. **Ensure access to the relay server**  
-   - Telegram: [@toroadit](https://t.me/toroadit)
+   - Telegram: @ondi_dev
 
 2. **Build the project**  
    - Run Gradle:  
@@ -71,7 +71,7 @@ You are free to use, modify, and distribute the mod for any purpose, including c
 
 ## Установка и запуск
 1. **Убедитесь в доступе к серверу-ретранслятору**
-   - Телеграмм @toroadit
+   - Телеграмм @ondi_dev
 2. **Соберите проект**  
    - Выполните сборку через Gradle:  
      ```bash
