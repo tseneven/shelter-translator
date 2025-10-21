@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.shelter.api.Translator;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -29,12 +30,7 @@ public class ChatListener{
 
         ClientReceiveMessageEvents.ALLOW_CHAT.register((text, signedMessage, gameProfile, sender, type) -> {
             String fullText = text.getString();
-
             int firstSpace = fullText.indexOf(' ');
-            String myUsername = gameProfile.getName();
-
-
-
             String username;
 
             if (firstSpace != -1) {
@@ -43,19 +39,40 @@ public class ChatListener{
                 username = fullText;
             }
 
-            myUsername = "<" + myUsername + ">";
+            username = username.replaceAll("[<>:]", "");
 
-            assert signedMessage != null;
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player == null) return true;
 
+            String myUsername = client.player.getGameProfile().getName();
 
-            if(myUsername.equals(username)){
+            System.out.println(username);
+            System.out.println(myUsername);
+
+            if (myUsername.equals(username)) {
                 return true;
             }
 
-            sendClientMessage(username, signedMessage.signedBody().content());
+            sendClientMessage("<" + myUsername + ">", username, signedMessage.signedBody().content());
+
 
             return true;
         });
+    }
+
+    // getting the current server address
+    public static String getCurrentServerAddress() {
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (client.getCurrentServerEntry() != null) {
+            ServerInfo serverInfo = client.getCurrentServerEntry();
+
+            String host = serverInfo.address;
+
+            return host;
+        }
+
+        return null;
     }
 
     // getting the current client language
@@ -68,20 +85,47 @@ public class ChatListener{
         return Utils.toGoogleLang(client.getLanguageManager().getLanguage());
     }
 
-    // displaying messages in chat
-    public static void sendClientMessage(String username, String message) {
+
+    public static void sendClientMessage(String username, String ownerUsername, String message) {
         String curLang = getCurrentClientLanguage();
-        Translator.translatorAsync(message, curLang, translations -> {
+        String curServer = getCurrentServerAddress();
+
+        Translator.translatorAsync(message, curLang, curServer, username, translations -> {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null || translations.size() == 0) return;
+            if (client.player == null) return;
 
-            JsonObject t = translations.get(0).getAsJsonObject();
-            String translatedText = t.get("text").getAsString();
-            String detectedLang = t.get("detectedLanguageCode").getAsString();
+            if (translations.size() == 0) return;
 
-            if (curLang.equals(detectedLang)) return;
+            JsonObject first = translations.get(0).getAsJsonObject();
+            String textToShowStr;
+            Formatting color = Formatting.DARK_GRAY;
+            boolean bold = false;
 
-            Text textToShow = Text.literal(username+ " "  + translatedText).formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
+            if (first.has("error")) {
+                String errorMessage = first.get("error").getAsString();
+
+                if (errorMessage.equals("Доступ запрещён")) {
+                    textToShowStr = "This mod can only be used on the shelter server: shelter.ru-mc.ru";
+                } else if (errorMessage.equals("Доступ запрещён: вы не в списке бетатестеров")) {
+                    textToShowStr = "You are not on the beta tester list.";
+                }
+                else {
+                    textToShowStr = errorMessage;
+                }
+
+                color = Formatting.DARK_RED;
+                bold = true;
+            } else {
+                String translatedText = first.get("text").getAsString();
+                String detectedLang = first.get("detectedLanguageCode").getAsString();
+
+                if (curLang.equals(detectedLang)) return;
+
+                textToShowStr = translatedText;
+            }
+
+            Text textToShow = Text.literal("<"+ownerUsername+ ">" + " " + textToShowStr)
+                    .formatted(color, bold ? Formatting.BOLD : Formatting.ITALIC);
 
             client.execute(() -> client.inGameHud.getChatHud().addMessage(textToShow));
         });
