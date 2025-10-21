@@ -1,59 +1,64 @@
 package com.shelter.api;
 
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.shelter.Config;
-
 
 public class Translator {
 
-    // POST request to Yandex servers
-        public static JsonArray translator(String text) {
-            try {
-                String apiKey = Config.API_KEY;
+    public static void translatorAsync(String text, String targetLanguageCode, TranslationCallback callback) {
+        try {
+            String requestBody = "{"
+                    + "\"texts\": [\"" + text + "\"],"
+                    + "\"targetLanguageCode\": \"" + targetLanguageCode + "\""
+                    + "}";
 
-                String folderId =  Config.FOLDER_ID;
+            HttpClient client = HttpClient.newHttpClient();
 
-                String requestBody = "{"
-                        +"\"folderId\": \"" + folderId + "\","
-                        + "\"texts\": [\"" + text + "\"],"
-                        + "\"targetLanguageCode\": \"ru\""
-                        + "}";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://147.45.108.225:5000/api/Retranslator/retrans"))
+                    .header("Content-Type", "application/json")
+                    .method("GET", HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                    .build();
 
-                HttpClient client = HttpClient.newHttpClient();
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(response -> {
+                        try {
+                            if (response.statusCode() != 200) {
+                                System.err.println("SERVER RESPONSE CODE: " + response.statusCode());
+                                System.err.println(response.body());
+                                callback.onTranslation(new JsonArray());
+                                return;
+                            }
 
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://translate.api.cloud.yandex.net/translate/v2/translate"))
-                        .header("Content-Type", "application/json")
-                        .header("Authorization", "Api-Key " + apiKey)
-                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                        .build();
+                            JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject();
+                            JsonArray translations = root.getAsJsonArray("translations");
 
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                            callback.onTranslation(translations);
 
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            callback.onTranslation(new JsonArray());
+                        }
+                    })
+                    .exceptionally(e -> {
+                        e.printStackTrace();
+                        callback.onTranslation(new JsonArray());
+                        return null;
+                    });
 
-                Gson gson = new Gson();
-                JsonObject root = gson.fromJson(response.body(), JsonObject.class);
-                JsonArray translations = root.getAsJsonArray("translations");
-                return translations;
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new JsonArray();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onTranslation(new JsonArray());
         }
-
     }
 
-
+    public interface TranslationCallback {
+        void onTranslation(JsonArray translations);
+    }
+}

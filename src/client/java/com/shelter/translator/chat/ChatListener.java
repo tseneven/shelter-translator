@@ -1,6 +1,5 @@
 package com.shelter.translator.chat;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.shelter.api.Translator;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -59,33 +58,20 @@ public class ChatListener{
 
     // displaying messages in chat
     public static void sendClientMessage(String username, String message) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player != null) {
+        String curLang = getCurrentClientLanguage();
+        Translator.translatorAsync(message, curLang, translations -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player == null || translations.size() == 0) return;
 
-            JsonArray translatorText = Translator.translator(message);
-            String translatedText = "";
+            JsonObject t = translations.get(0).getAsJsonObject();
+            String translatedText = t.get("text").getAsString();
+            String detectedLang = t.get("detectedLanguageCode").getAsString();
 
+            if (curLang.equals(detectedLang)) return;
 
-            if (translatorText == null || translatorText.size() == 0) {
-                return;
-            }
+            Text textToShow = Text.literal(username+ " "  + translatedText).formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
 
-            if (translatorText.size() > 0) {
-                JsonObject t = translatorText.get(0).getAsJsonObject();
-                translatedText = t.get("text").getAsString();
-                String detectedLang = t.get("detectedLanguageCode").getAsString();
-                String curLang = getCurrentClientLanguage();
-                if(curLang.equals(detectedLang)){
-                    translatedText = null;
-                }
-            }
-
-            if(translatedText != null && !translatedText.isEmpty()){
-                Text text = Text.literal("┌" + translatedText).formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
-                client.inGameHud.getChatHud().addMessage(text);
-            }
-
-        }
+            client.execute(() -> client.inGameHud.getChatHud().addMessage(textToShow));
+        });
     }
-
 }
