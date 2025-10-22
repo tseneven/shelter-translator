@@ -18,7 +18,7 @@ public class Translator {
 
 
             String requestBody = "{"
-                    + "\"serverAddress\": \"" + "shelter.ru-mc.ru" + "\","
+                    + "\"serverAddress\": \"" + curServer + "\","
                     + "\"nickname\": \"" + username + "\","
                     + "\"texts\": [\"" + text + "\"],"
                     + "\"targetLanguageCode\": \"" + targetLanguageCode + "\""
